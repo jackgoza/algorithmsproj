@@ -15,62 +15,71 @@ import java.util.ArrayList;
 public class Algoproj {
 
     public static InitGraph mGraph;
-    public static int[][] inFlow;
-    public static int source;
-    public static int dest;
-    public static int size;
-    public static int[][] distance;
-    public static int[][] next;
-    public static int[][] prev;
-    public static int[][] trueFlow;
-    public static int[][] pairs;
-    public static int inf = 99999;
+    public static Integer source;
+    public static Integer dest;
+    public static Integer size;
+    public static Integer[][] distance;
+    public static Integer[][] next;
+    public static Integer[][] prev;
+    public static Integer[][] trueFlow;
+    public static Integer[][] pairs;
+    public static Integer inf = 99999;
 
     public static void initMatrices() {
-	inFlow = new int[size][size];
-	next = new int[size][size];
-	prev = new int[size][size];
-	trueFlow = new int[size][size];
-	pairs = new int[size][size];
+
+	distance = new Integer[size][size];
+	next = new Integer[size][size];
+	prev = new Integer[size][size];
+	trueFlow = new Integer[size][size];
+	pairs = new Integer[size][size];
     }
 
-    public static int[][] FW() {
+    public static void FW(Integer[][] matrix) {
 
-	for (int i = 0; i < (size); i++) {
-	    for (int j = 0; j < (size); j++) {
+	for (Integer i = 0; i < (size); i++) {
+	    for (Integer j = 0; j < (size); j++) {
+		next[i][j] = 0;
+		prev[i][j] = 0;
 		if (i != j) {
-		    if (mGraph.adjacent[i][j] == 1) {
-			mGraph.adjacent[i][j] = mGraph.edgeGraph[i][j];
+		    if (matrix[i][j] == null || matrix[i][j] == 0) {
+			distance[i][j] = inf;
+			trueFlow[i][j] = 0;
+		    }
+
+		    else if (matrix[i][j] != 0) {
+			distance[i][j] = matrix[i][j];
 		    }
 		    else {
-			mGraph.adjacent[i][j] = inf;
-			mGraph.flowGraph[i][j] = inf;
+			distance[i][j] = 0;
 		    }
 		    next[i][j] = j + 1;
 		    prev[i][j] = i + 1;
+
+		}
+		else {
+		    distance[i][j] = 0;
 		}
 
 	    }
 	}
 
-	for (int i = 0; i < (mGraph.size); i++) {
-	    for (int j = 0; j < (mGraph.size); j++) {
-		for (int k = 0; k < (mGraph.size); k++) {
-		    if (mGraph.adjacent[j][i] + mGraph.adjacent[i][k] < mGraph.adjacent[j][k]) {
-			mGraph.adjacent[j][k] = mGraph.adjacent[j][i] + mGraph.adjacent[i][k];
+	for (Integer i = 0; i < (mGraph.size); i++) {
+	    for (Integer j = 0; j < (mGraph.size); j++) {
+		for (Integer k = 0; k < (mGraph.size); k++) {
+		    if (distance[j][i] + distance[i][k] < distance[j][k]) {
+			distance[j][k] = distance[j][i] + distance[i][k];
 			prev[j][k] = prev[i][k];
 			next[j][k] = next[j][i];
 		    }
 		}
 	    }
 	}
-	return mGraph.adjacent;
     }
 
-    static void printGraph(int[][] matrix) {
+    public static void printGraph(Integer[][] matrix) {
 	System.out.println("\n");
-	for (int i = 0; i < size; i++) {
-	    for (int j = 0; j < size; j++) {
+	for (Integer i = 0; i < size; i++) {
+	    for (Integer j = 0; j < size; j++) {
 		if (matrix[i][j] == inf) {
 		    System.out.print(Character.toString('\u221e') + '\t');
 		}
@@ -83,26 +92,45 @@ public class Algoproj {
 	}
     }
 
-    public static void makeTotalFlow() {
-	int current;
-	ArrayList trail = new ArrayList();
-	for (Path p : mGraph.flowList) {
-	    ArrayList<Integer> step = new ArrayList();
-	    current = p.pEnd;
-	    while (prev[p.pStart][current] != p.pStart + 1) {
-		current = prev[p.pStart][current] - 1;
-		step.add(current + 1);
-
-	    }
-	    step.add(p.pStart + 1);
-	    int start = step.get(0);
-	    for (int i = 1; i < step.size(); i++) {
-		current = step.get(i);
-		mGraph.flowGraph[current - 1][start - 1] += p.pFlow;
-		start = current;
-	    }
+    public static ArrayList<Integer> generatePath(Integer i, Integer j) {
+	ArrayList<Integer> path = new ArrayList<>();
+	if (next[i][j] == null) {
+	    return path;
 	}
 
+	path.add(i);
+	while (!i.equals(j)) {
+	    i = next[i][j] - 1;
+	    path.add(i);
+	}
+
+	return path;
+    }
+
+    public static void makeFlow(Integer[][] flowGraph) {
+
+	for (Integer i = 0; i < size; i++) {
+	    for (Integer j = 0; j < size; j++) {
+
+		Integer currentFlowAmount = flowGraph[i][j];
+		if (currentFlowAmount.equals(0)) {
+		    trueFlow[i][j] = 0;
+		}
+		else {
+
+		    ArrayList<Integer> path = generatePath(i, j);
+
+		    for (Integer x = 0; x < path.size() - 1; x++) {
+			if (trueFlow[path.get(x)][path.get(x + 1)] == null) {
+			    trueFlow[path.get(x)][path.get(x + 1)] = currentFlowAmount;
+			}
+			else {
+			    trueFlow[path.get(x)][path.get(x + 1)] += currentFlowAmount;
+			}
+		    }
+		}
+	    }
+	}
     }
 
     public static void main(String[] args) {
@@ -113,11 +141,29 @@ public class Algoproj {
 
 	initMatrices();
 
-	distance = FW();
+	FW(mGraph.edgeGraph);
+	System.out.println("Distance: ");
 	printGraph(distance);
-	makeTotalFlow();
+	System.out.println();
+	System.out.println("Next: ");
+	printGraph(next);
+	System.out.println();
+	System.out.println("Prev: ");
+	printGraph(prev);
+	System.out.println();
+	makeFlow(mGraph.flowGraph);
+	System.out.println("Flow: ");
+	printGraph(trueFlow);
+	System.out.println();
+	ArrayList<Integer> path = generatePath(source, dest);
+	StringBuffer sneakString = "";
+	for (Integer i : path) {
+	    i++;
+	    sneakString += i.toString() + ','
 
-	printGraph(mGraph.flowGraph);
+	);
+	}
+	printGraph(distance);
 
     }
 

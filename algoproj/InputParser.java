@@ -35,9 +35,16 @@ public class InputParser {
 	    else {
 		throw new Exception("Weird first line");
 	    }
-	    mainGraph.edgeGraph = new int[mainGraph.size][mainGraph.size];
-	    mainGraph.flowGraph = new int[mainGraph.size][mainGraph.size];
-	    int start, end, weight;
+	    mainGraph.edgeGraph = new Integer[mainGraph.size][mainGraph.size];
+	    mainGraph.flowGraph = new Integer[mainGraph.size][mainGraph.size];
+
+	    for (Integer i = 0; i < mainGraph.size; i++) {
+		for (Integer j = 0; j < mainGraph.size; j++) {
+		    mainGraph.edgeGraph[i][j] = 0;
+		    mainGraph.flowGraph[i][j] = 0;
+		}
+	    }
+	    Integer start, end, weight;
 	    String type = null;
 	    while (readBool) {
 		lineInString = br.readLine();
@@ -69,11 +76,14 @@ public class InputParser {
 		    }
 		}
 	    }
-	    mainGraph.adjacent = new int[mainGraph.size][mainGraph.size];
-	    for (int i = 0; i < mainGraph.size; i++) {
-		for (int j = 0; j < mainGraph.size; j++) {
+	    mainGraph.adjacent = new Integer[mainGraph.size][mainGraph.size];
+	    for (Integer i = 0; i < mainGraph.size; i++) {
+		for (Integer j = 0; j < mainGraph.size; j++) {
 		    if (mainGraph.edgeGraph[i][j] != 0) {
 			mainGraph.adjacent[i][j] = 1;
+		    }
+		    else {
+			mainGraph.adjacent[i][j] = 0;
 		    }
 		}
 	    }

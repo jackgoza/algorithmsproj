@@ -11,14 +11,14 @@ package algoproj;
  */
 public class Path {
 
-    public Path(int s, int e, int f) {
+    public Path(Integer s, Integer e, Integer f) {
 	this.pStart = s;
 	this.pEnd = e;
 	this.pFlow = f;
     }
 
-    public int pStart;
-    public int pEnd;
-    public int pFlow;
+    public Integer pStart;
+    public Integer pEnd;
+    public Integer pFlow;
 
 }

@@ -13,11 +13,11 @@ import java.util.ArrayList;
  */
 public class InitGraph {
 
-    public int start, end, size;
-    public int[][] edgeGraph;
-    public int[][] adjacent;
+    public Integer start, end, size;
+    public Integer[][] edgeGraph;
+    public Integer[][] adjacent;
     public ArrayList<Path> flowList;
-    public int[][] flowGraph;
+    public Integer[][] flowGraph;
 
     public InitGraph() {
 	this.start = 0;
@@ -26,7 +26,7 @@ public class InitGraph {
 	flowList = new ArrayList<>();
     }
 
-    public InitGraph(int st, int en, int si, int[][] graph) {
+    public InitGraph(Integer st, Integer en, Integer si, Integer[][] graph) {
 	this.start = st;
 	this.end = en;
 	this.size = si;
