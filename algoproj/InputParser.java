@@ -16,15 +16,19 @@ import java.io.FileReader;
 public class InputParser {
 
     public static InitGraph mainGraph;
+    public static double startTime;
+    public static double endTime;
 
-    public static InitGraph createMatrix() {
+    public static InitGraph createMatrix(String fileName) {
 
 	try {
-	    File in = new File("/Users/jack/Box Sync/UMKC3/Algorithms/algoproj/src/algoproj/SneakyPathInput.txt");
+
+	    File in = new File("/Users/jack/Box Sync/UMKC3/Algorithms/algoproj/input/" + fileName);
 	    BufferedReader br = new BufferedReader(new FileReader(in));
 	    Boolean readBool = true;
 
 	    mainGraph = new InitGraph();
+	    mainGraph.startParse = System.nanoTime();
 	    String lineInString = br.readLine();
 	    String[] currLine = lineInString.split(",");
 	    if (currLine.length == 3) {
@@ -88,6 +92,7 @@ public class InputParser {
 		}
 	    }
 	    br.close();
+	    mainGraph.endParse = System.nanoTime();
 	}
 	catch (Exception e) {
 	    e.printStackTrace();

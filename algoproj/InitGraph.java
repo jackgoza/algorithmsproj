@@ -18,6 +18,7 @@ public class InitGraph {
     public Integer[][] adjacent;
     public ArrayList<Path> flowList;
     public Integer[][] flowGraph;
+    public double startParse, endParse;
 
     public InitGraph() {
 	this.start = 0;

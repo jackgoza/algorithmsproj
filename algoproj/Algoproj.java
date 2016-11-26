@@ -6,7 +6,11 @@
 package algoproj;
 
 import static algoproj.InputParser.createMatrix;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -14,6 +18,9 @@ import java.util.ArrayList;
  */
 public class Algoproj {
 
+    public static int fwcounter = 0;
+    public static int pathcounter = 0;
+    public static int nodesDuringPathCreation = 0;
     public static InitGraph mGraph;
     public static Integer source;
     public static Integer dest;
@@ -24,6 +31,7 @@ public class Algoproj {
     public static Integer[][] trueFlow;
     public static Integer[][] pairs;
     public static Integer inf = 99999;
+    public static PrintWriter out;
 
     public static void initMatrices() {
 
@@ -43,7 +51,7 @@ public class Algoproj {
 		if (i != j) {
 		    if (matrix[i][j] == null || matrix[i][j] == 0) {
 			distance[i][j] = inf;
-			trueFlow[i][j] = 0;
+			trueFlow[i][j] = inf;
 		    }
 
 		    else if (matrix[i][j] != 0) {
@@ -66,10 +74,12 @@ public class Algoproj {
 	for (Integer i = 0; i < (mGraph.size); i++) {
 	    for (Integer j = 0; j < (mGraph.size); j++) {
 		for (Integer k = 0; k < (mGraph.size); k++) {
+		    fwcounter++;
 		    if (distance[j][i] + distance[i][k] < distance[j][k]) {
 			distance[j][k] = distance[j][i] + distance[i][k];
 			prev[j][k] = prev[i][k];
 			next[j][k] = next[j][i];
+
 		    }
 		}
 	    }
@@ -77,18 +87,18 @@ public class Algoproj {
     }
 
     public static void printGraph(Integer[][] matrix) {
-	System.out.println("\n");
+	out.println("\n");
 	for (Integer i = 0; i < size; i++) {
 	    for (Integer j = 0; j < size; j++) {
-		if (matrix[i][j] == inf) {
-		    System.out.print(Character.toString('\u221e') + '\t');
+		if (matrix[i][j] == inf || matrix[i][j] == null) {
+		    out.print(Character.toString('\u221e') + '\t');
 		}
 		else {
-		    System.out.print(matrix[i][j]);
-		    System.out.print("\t");
+		    out.print(matrix[i][j]);
+		    out.print("\t");
 		}
 	    }
-	    System.out.println("");
+	    out.println("");
 	}
     }
 
@@ -119,6 +129,7 @@ public class Algoproj {
 		else {
 
 		    ArrayList<Integer> path = generatePath(i, j);
+		    pathcounter++;
 
 		    for (Integer x = 0; x < path.size() - 1; x++) {
 			if (trueFlow[path.get(x)][path.get(x + 1)] == null) {
@@ -133,37 +144,122 @@ public class Algoproj {
 	}
     }
 
+    public static int findMax(ArrayList<Integer> path) {
+	Integer max = 0;
+	int i, j;
+	for (Integer x = 0; x < path.size() - 1; x++) {
+	    i = path.get(x);
+	    j = path.get(x + 1);
+	    if (trueFlow[i][j] > max) {
+		max = trueFlow[i][j];
+	    }
+
+	}
+	return max;
+    }
+
+    public static int findMin(ArrayList<Integer> path) {
+	Integer min = 0;
+	int i, j;
+	for (Integer x = 0; x < path.size() - 1; x++) {
+	    i = path.get(x);
+	    j = path.get(x + 1);
+	    if (trueFlow[i][j] < min) {
+		min = trueFlow[i][j];
+	    }
+	}
+	return min;
+    }
+
+    public static double findAvg(ArrayList<Integer> path) {
+	Integer sum = 0;
+	int i, j;
+	for (Integer x = 0; x < path.size() - 1; x++) {
+	    i = path.get(x);
+	    j = path.get(x + 1);
+	    sum += trueFlow[i][j];
+	}
+	if (sum.equals(0)) {
+	    return 0;
+	}
+	return sum / (path.size() - 1);
+    }
+
     public static void main(String[] args) {
-	mGraph = createMatrix();
+
+	String name = "Original";
+
+	double start = System.nanoTime();
+	mGraph = createMatrix("SneakyPathInput" + name + ".txt");
+	double parseTime = mGraph.endParse - mGraph.startParse;
 	size = mGraph.size;
 	source = mGraph.start;
 	dest = mGraph.end;
 
 	initMatrices();
 
-	FW(mGraph.edgeGraph);
-	System.out.println("Distance: ");
-	printGraph(distance);
-	System.out.println();
-	System.out.println("Next: ");
-	printGraph(next);
-	System.out.println();
-	System.out.println("Prev: ");
-	printGraph(prev);
-	System.out.println();
-	makeFlow(mGraph.flowGraph);
-	System.out.println("Flow: ");
-	printGraph(trueFlow);
-	System.out.println();
-	ArrayList<Integer> path = generatePath(source, dest);
-	StringBuffer sneakString = "";
-	for (Integer i : path) {
-	    i++;
-	    sneakString += i.toString() + ','
+	try {
 
-	);
+	    File fileOut = new File("/Users/jack/Box Sync/UMKC3/Algorithms/algoproj/output/" + name + ".txt");
+	    out = new PrintWriter(fileOut);
+
+	    FW(mGraph.edgeGraph);
+	    makeFlow(mGraph.flowGraph);
+	    ArrayList<Integer> path = generatePath(source, dest);
+
+	    double finish = System.nanoTime();
+	    double algoTime = finish - start;
+
+	    out.println("Distance: ");
+	    printGraph(distance);
+	    out.println();
+	    out.println("Next: ");
+	    printGraph(next);
+	    out.println();
+	    out.println("Prev: ");
+	    printGraph(prev);
+	    out.println();
+	    out.println("NonAdjusted Flow: ");
+	    printGraph(mGraph.flowGraph);
+
+	    out.println();
+	    out.println("Adjusted Flow: ");
+	    printGraph(trueFlow);
+	    out.println();
+
+	    StringBuilder sneakString = new StringBuilder();
+	    for (Integer i : path) {
+		i++;
+		sneakString.append(i.toString() + ',');
+	    }
+	    sneakString.deleteCharAt(sneakString.lastIndexOf(","));
+
+	    out.println("Shortest path is:");
+	    out.println(sneakString);
+
+	    out.println("Max value is:");
+	    out.println(findMax(path));
+
+	    out.println("Min value is:");
+	    out.println(findMin(path));
+
+	    out.println("Avg value is:");
+	    out.println(findAvg(path));
+
+	    out.println("Time elapsed is:");
+	    out.println((algoTime / 1000000) + " ms");
+	    out.println("Input parsing took:");
+	    out.println((parseTime / 1000000) + "ms");
+	    out.println("The FW counter is at:");
+	    out.println(fwcounter);
+
+	    out.flush();
+	    out.close();
+
 	}
-	printGraph(distance);
+	catch (Exception ex) {
+	    Logger.getLogger(Algoproj.class.getName()).log(Level.SEVERE, null, ex);
+	}
 
     }
 
